@@ -4,7 +4,7 @@ body {
 }
 
 .app-navbar {
-    background: linear-gradient(135deg, #0b5ed7 0%, #3b82f6 60%, #60a5fa 100%);
+    background: #0d6efd;
 }
 
 .app-navbar .navbar-brand,
@@ -21,6 +21,12 @@ body {
 .app-navbar .nav-link:hover,
 .app-navbar .nav-link.active {
     background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.app-navbar .dropdown-menu .dropdown-item.active,
+.app-navbar .dropdown-menu .dropdown-item:active {
+    background-color: #0d6efd;
     color: #ffffff;
 }
 

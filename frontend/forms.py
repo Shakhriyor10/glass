@@ -43,6 +43,7 @@ class WarehouseReceiptForm(StyledModelForm):
         model = WarehouseReceipt
         fields = [
             "category",
+            "product_code",
             "supplier",
             "width_mm",
             "height_mm",
