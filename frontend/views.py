@@ -70,9 +70,14 @@ class DashboardView(View):
         )
 
         size_pairs = WarehouseReceipt.objects.values_list("glass_type_id", "width_mm", "height_mm").distinct()
+        product_code_pairs = WarehouseReceipt.objects.values_list("glass_type_id", "product_code").distinct()
         size_map = defaultdict(set)
+        product_code_map = defaultdict(set)
         for glass_type_id, width_mm, height_mm in size_pairs:
             size_map[glass_type_id].add(f"{width_mm} × {height_mm}")
+
+        for glass_type_id, product_code in product_code_pairs:
+            product_code_map[glass_type_id].add(product_code)
 
         warehouse_balance_rows = []
         for balance in warehouse_balances:
@@ -80,6 +85,7 @@ class DashboardView(View):
             warehouse_balance_rows.append(
                 {
                     "category_name": balance.glass_type.category.name,
+                    "product_codes": ", ".join(sorted(product_code_map.get(balance.glass_type_id, []))) or "—",
                     "size_display": ", ".join(sizes) if sizes else "—",
                     "total_sheets": balance.total_sheets,
                     "total_volume_m2": balance.total_volume_m2,
