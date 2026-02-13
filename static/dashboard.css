@@ -1,0 +1,38 @@
+body {
+    background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+    min-height: 100vh;
+}
+
+.app-navbar {
+    background: linear-gradient(135deg, #0b5ed7 0%, #3b82f6 60%, #60a5fa 100%);
+}
+
+.app-navbar .navbar-brand,
+.app-navbar .nav-link {
+    color: #ffffff;
+}
+
+.app-navbar .nav-link {
+    border-radius: 10px;
+    padding: 0.5rem 0.9rem;
+    font-weight: 600;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.card {
+    border-radius: 14px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+.table thead th {
+    white-space: nowrap;
+}
