@@ -11,109 +11,194 @@
 </div>
 
 {% if active_tab == 'warehouse' %}
-    <div class="row g-4">
-        <div class="col-12 col-xl-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h2 class="h5">Добавить категорию стекла</h2>
-                    <form method="post" class="vstack gap-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="create_category">
-                        <input type="hidden" name="active_tab" value="warehouse">
-                        {{ create_category_form.as_p }}
-                        <button class="btn btn-primary" type="submit">Добавить категорию</button>
-                    </form>
+    {% if warehouse_view == 'categories' %}
+        <div class="row g-4">
+            <div class="col-12 col-xl-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Добавить категорию стекла</h2>
+                        <form method="post" class="vstack gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="create_category">
+                            <input type="hidden" name="active_tab" value="warehouse">
+                            <input type="hidden" name="warehouse_view" value="categories">
+                            {{ create_category_form.as_p }}
+                            <button class="btn btn-primary" type="submit">Добавить категорию</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-12 col-xl-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body">
-                    <h2 class="h5">Поступление стекла на склад</h2>
-                    <form method="post" class="row g-3">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="create_receipt">
-                        <input type="hidden" name="active_tab" value="warehouse">
-                        {% for field in create_receipt_form %}
-                            <div class="col-12 col-md-6">
-                                <label class="form-label">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                        <div class="col-12">
-                            <button class="btn btn-success" type="submit">Добавить поступление</button>
+            <div class="col-12 col-xl-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Список категорий стекла</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Название категории</th>
+                                    <th class="w-50">Изменить</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for category in categories %}
+                                    <tr>
+                                        <td>{{ category.name }}</td>
+                                        <td>
+                                            <form method="post" class="d-flex flex-column flex-md-row gap-2 align-items-md-start">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="update_category">
+                                                <input type="hidden" name="category_id" value="{{ category.id }}">
+                                                <input type="hidden" name="active_tab" value="warehouse">
+                                                <input type="hidden" name="warehouse_view" value="categories">
+                                                <div class="flex-grow-1">
+                                                    <input
+                                                        class="form-control {% if editing_category_id == category.id and category_edit_form and category_edit_form.name.errors %}is-invalid{% endif %}"
+                                                        type="text"
+                                                        name="name"
+                                                        value="{% if editing_category_id == category.id and category_edit_form %}{{ category_edit_form.name.value }}{% else %}{{ category.name }}{% endif %}"
+                                                        required
+                                                    >
+                                                    {% if editing_category_id == category.id and category_edit_form and category_edit_form.name.errors %}
+                                                        <div class="invalid-feedback d-block">{{ category_edit_form.name.errors|join:', ' }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <button class="btn btn-outline-primary" type="submit">Сохранить</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="2" class="text-muted">Категорий пока нет.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body">
-                    <h2 class="h5">Остатки по стеклу (по количеству и объему)</h2>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                            <tr>
-                                <th>Категория</th>
-                                <th>Листов (шт)</th>
-                                <th>Объем (м²)</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for balance in warehouse_balances %}
-                                <tr>
-                                    <td>{{ balance.glass_type.category.name }}</td>
-                                    <td>{{ balance.total_sheets }}</td>
-                                    <td>{{ balance.total_volume_m2 }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr><td colspan="3" class="text-muted">Остатков пока нет.</td></tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5">Последние операции по складу</h2>
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
-                            <thead>
-                            <tr>
-                                <th>Дата</th>
-                                <th>Стекло</th>
-                                <th>Поставщик</th>
-                                <th>Размер (мм)</th>
-                                <th>Кол-во</th>
-                                <th>Сумма</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for receipt in warehouse_receipts %}
-                                <tr>
-                                    <td>{{ receipt.created_at|date:"d.m.Y H:i" }}</td>
-                                    <td>{{ receipt.glass_type.category.name }}</td>
-                                    <td>{{ receipt.supplier.name }}</td>
-                                    <td>{{ receipt.width_mm }} × {{ receipt.height_mm }}</td>
-                                    <td>{{ receipt.quantity }}</td>
-                                    <td>{{ receipt.total_amount }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr><td colspan="6" class="text-muted">Поступлений пока нет.</td></tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Категорий стекла</p>
+                        <p class="display-6 mb-0">{{ categories|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Листов стекла на складе</p>
+                        <p class="display-6 mb-0">{{ total_sheets }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Общий объем, м²</p>
+                        <p class="display-6 mb-0">{{ total_volume }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-12">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">Поступление стекла на склад</h2>
+                        <form method="post" class="row g-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="create_receipt">
+                            <input type="hidden" name="active_tab" value="warehouse">
+                            <input type="hidden" name="warehouse_view" value="overview">
+                            {% for field in create_receipt_form %}
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <div class="col-12">
+                                <button class="btn btn-success" type="submit">Добавить поступление</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">Остатки по стеклу (по количеству и объему)</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Размер (мм)</th>
+                                    <th>Листов (шт)</th>
+                                    <th>Объем (м²)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for balance in warehouse_balance_rows %}
+                                    <tr>
+                                        <td>{{ balance.category_name }}</td>
+                                        <td>{{ balance.size_display }}</td>
+                                        <td>{{ balance.total_sheets }}</td>
+                                        <td>{{ balance.total_volume_m2 }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted">Остатков пока нет.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Последние операции по складу</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Стекло</th>
+                                    <th>Поставщик</th>
+                                    <th>Код продукта</th>
+                                    <th>Размер (мм)</th>
+                                    <th>Кол-во</th>
+                                    <th>Сумма</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for receipt in warehouse_receipts %}
+                                    <tr>
+                                        <td>{{ receipt.created_at|date:"d.m.Y H:i" }}</td>
+                                        <td>{{ receipt.glass_type.category.name }}</td>
+                                        <td>{{ receipt.supplier.name }}</td>
+                                        <td>{{ receipt.product_code }}</td>
+                                        <td>{{ receipt.width_mm }} × {{ receipt.height_mm }}</td>
+                                        <td>{{ receipt.quantity }}</td>
+                                        <td>{{ receipt.total_amount }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="7" class="text-muted">Поступлений пока нет.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% else %}
     <div class="row g-4">
         <div class="col-12 col-lg-5">

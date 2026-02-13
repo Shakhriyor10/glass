@@ -70,6 +70,7 @@ class WarehouseReceipt(models.Model):
         related_name="receipts",
         verbose_name="Вид стекла",
     )
+    product_code = models.CharField("Код продукта", max_length=100)
     supplier = models.ForeignKey(
         Partner,
         on_delete=models.PROTECT,
