@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -61,9 +63,28 @@ class DashboardView(View):
         return render(request, self.template_name, context)
 
     def _build_context(self, active_tab, warehouse_view="overview"):
-        warehouse_balances = WarehouseBalance.objects.select_related(
-            "glass_type", "glass_type__category"
-        ).order_by("glass_type__category__name", "glass_type__name")
+        warehouse_balances = list(
+            WarehouseBalance.objects.select_related("glass_type", "glass_type__category").order_by(
+                "glass_type__category__name", "glass_type__name"
+            )
+        )
+
+        size_pairs = WarehouseReceipt.objects.values_list("glass_type_id", "width_mm", "height_mm").distinct()
+        size_map = defaultdict(set)
+        for glass_type_id, width_mm, height_mm in size_pairs:
+            size_map[glass_type_id].add(f"{width_mm} × {height_mm}")
+
+        warehouse_balance_rows = []
+        for balance in warehouse_balances:
+            sizes = sorted(size_map.get(balance.glass_type_id, []))
+            warehouse_balance_rows.append(
+                {
+                    "category_name": balance.glass_type.category.name,
+                    "size_display": ", ".join(sizes) if sizes else "—",
+                    "total_sheets": balance.total_sheets,
+                    "total_volume_m2": balance.total_volume_m2,
+                }
+            )
 
         total_sheets = sum(balance.total_sheets for balance in warehouse_balances)
         total_volume = sum(balance.total_volume_m2 for balance in warehouse_balances)
@@ -78,7 +99,7 @@ class DashboardView(View):
             "warehouse_receipts": WarehouseReceipt.objects.select_related(
                 "glass_type", "glass_type__category", "supplier"
             ).order_by("-created_at"),
-            "warehouse_balances": warehouse_balances,
+            "warehouse_balance_rows": warehouse_balance_rows,
             "categories": GlassCategory.objects.order_by("name"),
             "category_edit_form": None,
             "editing_category_id": None,

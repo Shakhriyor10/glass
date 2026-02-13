@@ -29,3 +29,9 @@ class DashboardViewTests(TestCase):
         category.refresh_from_db()
         self.assertEqual(category.name, "Матовое")
         self.assertContains(response, "Категория стекла обновлена")
+
+    def test_receipt_form_shows_product_code_field(self):
+        response = self.client.get(reverse("dashboard"), {"tab": "warehouse", "warehouse_view": "overview"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Код продукта")
