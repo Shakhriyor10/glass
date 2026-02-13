@@ -34,10 +34,15 @@ class GlassTypeForm(StyledModelForm):
 
 
 class WarehouseReceiptForm(StyledModelForm):
+    category = forms.ModelChoiceField(
+        queryset=GlassCategory.objects.all(),
+        label="Категория",
+    )
+
     class Meta:
         model = WarehouseReceipt
         fields = [
-            "glass_type",
+            "category",
             "supplier",
             "width_mm",
             "height_mm",
@@ -51,3 +56,14 @@ class WarehouseReceiptForm(StyledModelForm):
         self.fields["supplier"].queryset = Partner.objects.filter(
             partner_type=Partner.SUPPLIER
         )
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        category = self.cleaned_data["category"]
+        instance.glass_type, _ = GlassType.objects.get_or_create(
+            category=category,
+            name=category.name,
+        )
+        if commit:
+            instance.save()
+        return instance
