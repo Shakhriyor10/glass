@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views import View
 
-from .forms import GlassCategoryForm, GlassTypeForm, PartnerForm, WarehouseReceiptForm
+from .forms import GlassCategoryForm, PartnerForm, WarehouseReceiptForm
 from .models import Partner, WarehouseBalance, WarehouseReceipt
 
 
@@ -21,7 +21,6 @@ class DashboardView(View):
         form_map = {
             "create_partner": (PartnerForm, "Контрагент добавлен.", "counterparty"),
             "create_category": (GlassCategoryForm, "Категория стекла добавлена.", "warehouse"),
-            "create_glass_type": (GlassTypeForm, "Вид стекла добавлен.", "warehouse"),
             "create_receipt": (WarehouseReceiptForm, "Поступление на склад добавлено.", "warehouse"),
         }
 
@@ -46,7 +45,6 @@ class DashboardView(View):
             "active_tab": active_tab,
             "create_partner_form": PartnerForm(),
             "create_category_form": GlassCategoryForm(),
-            "create_glass_type_form": GlassTypeForm(),
             "create_receipt_form": WarehouseReceiptForm(),
             "partners": Partner.objects.order_by("-created_at"),
             "warehouse_receipts": WarehouseReceipt.objects.select_related(
