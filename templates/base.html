@@ -11,25 +11,25 @@
 <body>
 <nav class="navbar navbar-expand-lg app-navbar shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/">Glass Управление</a>
+        <a class="navbar-brand fw-bold" href="{% url 'warehouse' %}">Glass Управление</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'counterparty' %}active{% endif %}" href="/?tab=counterparty">Контрагенты</a>
+                    <a class="nav-link {% if active_tab == 'counterparty' %}active{% endif %}" href="{% url 'counterparty' %}">Контрагенты</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'orders' %}active{% endif %}" href="/?tab=orders">Заказы</a>
+                    <a class="nav-link {% if active_tab == 'orders' %}active{% endif %}" href="{% url 'orders' %}">Заказы</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if active_tab == 'warehouse' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Склад
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="/?tab=warehouse&warehouse_view=overview">Склад и остатки стекла</a></li>
-                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="/?tab=warehouse&warehouse_view=categories">Категории стекла</a></li>
+                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="{% url 'warehouse' %}">Склад и остатки стекла</a></li>
+                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="{% url 'warehouse_categories' %}">Категории стекла</a></li>
                     </ul>
                 </li>
             </ul>

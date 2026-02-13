@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Контрагенты{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Контрагенты</h1>
+        <p class="text-muted mb-0">Добавление и просмотр клиентов и поставщиков.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-5"><div class="card shadow-sm border-0"><div class="card-body">
+        <h2 class="h5">Добавить контрагента</h2>
+        <form method="post" class="vstack gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_partner">
+            <input type="hidden" name="active_tab" value="counterparty">
+            {{ create_partner_form.as_p }}
+            <button class="btn btn-primary" type="submit">Сохранить контрагента</button>
+        </form>
+    </div></div></div>
+    <div class="col-12 col-lg-7"><div class="card shadow-sm border-0 h-100"><div class="card-body">
+        <h2 class="h5">Список контрагентов</h2>
+        <div class="table-responsive"><table class="table table-hover align-middle">
+            <thead><tr><th>Тип</th><th>Название</th><th>Телефон</th><th>Адрес</th></tr></thead>
+            <tbody>
+            {% for partner in partners %}
+                <tr><td>{{ partner.get_partner_type_display }}</td><td>{{ partner.name }}</td><td>{{ partner.phone|default:"—" }}</td><td>{{ partner.address|default:"—" }}</td></tr>
+            {% empty %}<tr><td colspan="4" class="text-muted">Контрагентов пока нет.</td></tr>{% endfor %}
+            </tbody>
+        </table></div>
+    </div></div></div>
+</div>
+{% endblock %}

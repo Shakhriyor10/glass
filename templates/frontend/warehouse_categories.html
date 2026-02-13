@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Категории склада{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Категории стекла</h1>
+        <p class="text-muted mb-0">Управление типами стекла для складского учета.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card shadow-sm border-0 h-100"><div class="card-body">
+            <h2 class="h5">Добавить категорию стекла</h2>
+            <form method="post" class="vstack gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_category">
+                <input type="hidden" name="active_tab" value="warehouse">
+                <input type="hidden" name="warehouse_view" value="categories">
+                {{ create_category_form.as_p }}
+                <button class="btn btn-primary" type="submit">Добавить категорию</button>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-12 col-xl-8">
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Список категорий стекла</h2>
+            <div class="table-responsive"><table class="table table-hover align-middle">
+                <thead><tr><th>Название</th><th>Изменить</th></tr></thead>
+                <tbody>
+                {% for category in categories %}
+                    <tr>
+                        <td>{{ category.name }}</td>
+                        <td>
+                            <form method="post" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_category">
+                                <input type="hidden" name="category_id" value="{{ category.id }}">
+                                <input type="hidden" name="active_tab" value="warehouse">
+                                <input type="hidden" name="warehouse_view" value="categories">
+                                <input class="form-control" type="text" name="name" value="{{ category.name }}" required>
+                                <button class="btn btn-outline-primary" type="submit">Сохранить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="2" class="text-muted">Категорий пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div>
+        </div></div>
+    </div>
+</div>
+{% endblock %}
