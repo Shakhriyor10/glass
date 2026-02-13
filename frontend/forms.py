@@ -125,6 +125,7 @@ class OrderForm(StyledModelForm):
 
         self.fields["warehouse_sheet"].widget = WarehouseSheetSelect(
             attrs=self.fields["warehouse_sheet"].widget.attrs,
+            choices=self.fields["warehouse_sheet"].choices,
             sheet_map={
                 str(sheet.pk): {
                     "width_mm": sheet.width_mm,
@@ -135,6 +136,7 @@ class OrderForm(StyledModelForm):
                 for sheet in warehouse_sheets
             },
         )
+        self.fields["warehouse_sheet"].widget.choices = self.fields["warehouse_sheet"].choices
         self.fields["warehouse_sheet"].label_from_instance = self._sheet_label
         self.suitable_sheets = []
 
