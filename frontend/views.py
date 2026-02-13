@@ -1,11 +1,12 @@
 from collections import defaultdict
 
 from django.contrib import messages
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from .forms import GlassCategoryForm, PartnerForm, WarehouseReceiptForm
-from .models import GlassCategory, Partner, WarehouseBalance, WarehouseReceipt
+from .forms import GlassCategoryForm, OrderForm, PartnerForm, WarehouseReceiptForm
+from .models import GlassCategory, Order, Partner, WarehouseBalance, WarehouseReceipt, WasteRecord
 
 
 class DashboardView(View):
@@ -26,6 +27,7 @@ class DashboardView(View):
             "create_partner": (PartnerForm, "Контрагент добавлен.", "counterparty", "overview"),
             "create_category": (GlassCategoryForm, "Категория стекла добавлена.", "warehouse", "categories"),
             "create_receipt": (WarehouseReceiptForm, "Поступление на склад добавлено.", "warehouse", "overview"),
+            "create_order": (OrderForm, "Заказ создан.", "orders", "overview"),
         }
 
         if action == "update_category":
@@ -95,20 +97,26 @@ class DashboardView(View):
         total_sheets = sum(balance.total_sheets for balance in warehouse_balances)
         total_volume = sum(balance.total_volume_m2 for balance in warehouse_balances)
 
+        create_order_form = OrderForm()
         return {
             "active_tab": active_tab,
             "warehouse_view": warehouse_view,
             "create_partner_form": PartnerForm(),
             "create_category_form": GlassCategoryForm(),
             "create_receipt_form": WarehouseReceiptForm(),
+            "create_order_form": create_order_form,
             "partners": Partner.objects.order_by("-created_at"),
             "warehouse_receipts": WarehouseReceipt.objects.select_related(
                 "glass_type", "glass_type__category", "supplier"
             ).order_by("-created_at"),
             "warehouse_balance_rows": warehouse_balance_rows,
             "categories": GlassCategory.objects.order_by("name"),
+            "orders": Order.objects.select_related("client", "warehouse_sheet", "warehouse_sheet__glass_type", "warehouse_sheet__glass_type__category"),
+            "waste_records": WasteRecord.objects.select_related("order", "warehouse_sheet")[:10],
             "category_edit_form": None,
             "editing_category_id": None,
             "total_sheets": total_sheets,
             "total_volume": total_volume,
+            "total_waste_volume": WasteRecord.objects.aggregate(total=Sum("waste_volume_m2"))["total"] or 0,
+            "total_waste_amount": WasteRecord.objects.aggregate(total=Sum("waste_amount"))["total"] or 0,
         }

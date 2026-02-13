@@ -18,7 +18,10 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'counterparty' %}active{% endif %}" href="/?tab=counterparty">КонтрАгент</a>
+                    <a class="nav-link {% if active_tab == 'counterparty' %}active{% endif %}" href="/?tab=counterparty">Контрагенты</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'orders' %}active{% endif %}" href="/?tab=orders">Заказы</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if active_tab == 'warehouse' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
