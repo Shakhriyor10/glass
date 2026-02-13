@@ -9,25 +9,23 @@ from .forms import GlassCategoryForm, OrderForm, PartnerForm, WarehouseReceiptFo
 from .models import GlassCategory, Order, Partner, WarehouseBalance, WarehouseReceipt, WasteRecord
 
 
-class DashboardView(View):
+class DashboardSectionView(View):
     template_name = "frontend/dashboard.html"
+    active_tab = "warehouse"
+    warehouse_view = "overview"
 
     def get(self, request):
-        active_tab = request.GET.get("tab", "warehouse")
-        warehouse_view = request.GET.get("warehouse_view", "overview")
-        context = self._build_context(active_tab=active_tab, warehouse_view=warehouse_view)
+        context = self._build_context(active_tab=self.active_tab, warehouse_view=self.warehouse_view)
         return render(request, self.template_name, context)
 
     def post(self, request):
         action = request.POST.get("action")
-        active_tab = request.POST.get("active_tab", "warehouse")
-        warehouse_view = request.POST.get("warehouse_view", "overview")
 
         form_map = {
-            "create_partner": (PartnerForm, "Контрагент добавлен.", "counterparty", "overview"),
-            "create_category": (GlassCategoryForm, "Категория стекла добавлена.", "warehouse", "categories"),
-            "create_receipt": (WarehouseReceiptForm, "Поступление на склад добавлено.", "warehouse", "overview"),
-            "create_order": (OrderForm, "Заказ создан.", "orders", "overview"),
+            "create_partner": (PartnerForm, "Контрагент добавлен.", "counterparty"),
+            "create_category": (GlassCategoryForm, "Категория стекла добавлена.", "warehouse_categories"),
+            "create_receipt": (WarehouseReceiptForm, "Поступление на склад добавлено.", "warehouse"),
+            "create_order": (OrderForm, "Заказ создан.", "orders"),
         }
 
         if action == "update_category":
@@ -35,17 +33,17 @@ class DashboardView(View):
 
         if action not in form_map:
             messages.error(request, "Неизвестное действие формы.")
-            return redirect("dashboard")
+            return redirect(self.active_tab_url_name)
 
-        form_class, success_message, target_tab, target_view = form_map[action]
+        form_class, success_message, target_url_name = form_map[action]
         form = form_class(request.POST)
 
         if form.is_valid():
             form.save()
             messages.success(request, success_message)
-            return redirect(f"/?tab={target_tab}&warehouse_view={target_view}")
+            return redirect(target_url_name)
 
-        context = self._build_context(active_tab=active_tab, warehouse_view=warehouse_view)
+        context = self._build_context(active_tab=self.active_tab, warehouse_view=self.warehouse_view)
         context[f"{action}_form"] = form
         return render(request, self.template_name, context)
 
@@ -57,12 +55,21 @@ class DashboardView(View):
         if form.is_valid():
             form.save()
             messages.success(request, "Категория стекла обновлена.")
-            return redirect("/?tab=warehouse&warehouse_view=categories")
+            return redirect("warehouse_categories")
 
         context = self._build_context(active_tab="warehouse", warehouse_view="categories")
         context["category_edit_form"] = form
         context["editing_category_id"] = category.id
-        return render(request, self.template_name, context)
+        return render(request, "frontend/warehouse_categories.html", context)
+
+    @property
+    def active_tab_url_name(self):
+        tab_to_url_name = {
+            "counterparty": "counterparty",
+            "orders": "orders",
+            "warehouse": "warehouse_categories" if self.warehouse_view == "categories" else "warehouse",
+        }
+        return tab_to_url_name[self.active_tab]
 
     def _build_context(self, active_tab, warehouse_view="overview"):
         warehouse_balances = list(
@@ -111,7 +118,9 @@ class DashboardView(View):
             ).order_by("-created_at"),
             "warehouse_balance_rows": warehouse_balance_rows,
             "categories": GlassCategory.objects.order_by("name"),
-            "orders": Order.objects.select_related("client", "warehouse_sheet", "warehouse_sheet__glass_type", "warehouse_sheet__glass_type__category"),
+            "orders": Order.objects.select_related(
+                "client", "warehouse_sheet", "warehouse_sheet__glass_type", "warehouse_sheet__glass_type__category"
+            ),
             "waste_records": WasteRecord.objects.select_related("order", "warehouse_sheet")[:10],
             "category_edit_form": None,
             "editing_category_id": None,
@@ -120,3 +129,24 @@ class DashboardView(View):
             "total_waste_volume": WasteRecord.objects.aggregate(total=Sum("waste_volume_m2"))["total"] or 0,
             "total_waste_amount": WasteRecord.objects.aggregate(total=Sum("waste_amount"))["total"] or 0,
         }
+
+
+class CounterpartyView(DashboardSectionView):
+    template_name = "frontend/counterparty.html"
+    active_tab = "counterparty"
+
+
+class OrdersView(DashboardSectionView):
+    template_name = "frontend/orders.html"
+    active_tab = "orders"
+
+
+class WarehouseView(DashboardSectionView):
+    template_name = "frontend/warehouse.html"
+    active_tab = "warehouse"
+
+
+class WarehouseCategoriesView(DashboardSectionView):
+    template_name = "frontend/warehouse_categories.html"
+    active_tab = "warehouse"
+    warehouse_view = "categories"

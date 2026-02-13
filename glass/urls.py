@@ -17,11 +17,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import RedirectView
 
-from frontend.views import DashboardView
+from frontend.views import CounterpartyView, OrdersView, WarehouseCategoriesView, WarehouseView
 
 urlpatterns = [
-    path('', DashboardView.as_view(), name='dashboard'),
+    path('', RedirectView.as_view(pattern_name='warehouse', permanent=False)),
+    path('counterparty/', CounterpartyView.as_view(), name='counterparty'),
+    path('orders/', OrdersView.as_view(), name='orders'),
+    path('warehouse/', WarehouseView.as_view(), name='warehouse'),
+    path('warehouse/categories/', WarehouseCategoriesView.as_view(), name='warehouse_categories'),
     path('admin/', admin.site.urls),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

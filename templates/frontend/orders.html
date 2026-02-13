@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказы{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Заказы</h1>
+        <p class="text-muted mb-0">Оформление заказов и контроль остатков по листам.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-5">
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Новый заказ</h2>
+            <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за м².</p>
+            <form method="post" class="vstack gap-2" id="order-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_order">
+                <input type="hidden" name="active_tab" value="orders">
+                {{ create_order_form.as_p }}
+                <div class="alert alert-info py-2 mb-1" id="order-preview">Сумма рассчитана после ввода размеров и цены.</div>
+                <button class="btn btn-primary" type="submit">Создать заказ</button>
+            </form>
+            {% if create_order_form.suitable_sheets %}
+                <div class="mt-3">
+                    <h3 class="h6">Подходящие листы по размерам</h3>
+                    <ul class="small text-muted mb-0">
+                        {% for sheet in create_order_form.suitable_sheets %}
+                            <li>{{ sheet.glass_type.category.name }} / {{ sheet.product_code }} / {{ sheet.width_mm }}×{{ sheet.height_mm }} / {{ sheet.thickness_mm }} мм</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div></div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Список заказов</h2>
+            <div class="table-responsive"><table class="table table-hover align-middle">
+                <thead><tr><th>ID</th><th>Клиент</th><th>Лист</th><th>Размер</th><th>Статус</th><th>Сумма</th><th>Остаток листа</th></tr></thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.client.name }}</td>
+                        <td>{{ order.warehouse_sheet.product_code }}</td>
+                        <td>{{ order.width_mm }}×{{ order.height_mm }} / {{ order.thickness_mm }} мм</td>
+                        <td>{{ order.get_status_display }}</td>
+                        <td>{{ order.total_amount }}</td>
+                        <td>{{ order.warehouse_sheet.remaining_volume_m2 }} м²</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="text-muted">Заказов пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div>
+        </div></div>
+    </div>
+</div>
+<script>
+(function () {
+  const form = document.getElementById('order-form');
+  if (!form) return;
+  const width = form.querySelector('[name="width_mm"]');
+  const height = form.querySelector('[name="height_mm"]');
+  const price = form.querySelector('[name="price_per_m2"]');
+  const waste = form.querySelector('[name="waste_percent"]');
+  const preview = document.getElementById('order-preview');
+  const recalc = () => {
+    const w = parseFloat(width?.value || 0);
+    const h = parseFloat(height?.value || 0);
+    const p = parseFloat(price?.value || 0);
+    const wp = parseFloat(waste?.value || 0);
+    const orderVolume = (w / 1000) * (h / 1000);
+    const wasteVolume = orderVolume * (wp / 100);
+    const total = (orderVolume + wasteVolume) * p;
+    preview.textContent = `Объем: ${orderVolume.toFixed(3)} м² | Отход: ${wasteVolume.toFixed(3)} м² | Итого: ${total.toFixed(2)}`;
+  };
+  [width, height, price, waste].forEach((el) => el && el.addEventListener('input', recalc));
+})();
+</script>
+{% endblock %}

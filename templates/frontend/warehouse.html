@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Склад{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Склад</h1>
+        <p class="text-muted mb-0">Остатки, приходы и последние отходы производства.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Листов на складе</p><p class="display-6 mb-0">{{ total_sheets }}</p></div></div></div>
+    <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (м²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
+    <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Отходы (сумма)</p><p class="display-6 mb-0">{{ total_waste_amount }}</p></div></div></div>
+</div>
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Приход на склад</h2>
+            <form method="post" class="vstack gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_receipt">
+                <input type="hidden" name="active_tab" value="warehouse">
+                <input type="hidden" name="warehouse_view" value="overview">
+                {{ create_receipt_form.as_p }}
+                <button class="btn btn-primary" type="submit">Добавить приход</button>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-12 col-xl-8 d-grid gap-4">
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Остатки на складе</h2>
+            <div class="table-responsive"><table class="table table-hover align-middle">
+                <thead><tr><th>Категория</th><th>Коды</th><th>Размеры</th><th>Листов</th><th>Объем</th></tr></thead>
+                <tbody>
+                {% for balance in warehouse_balance_rows %}
+                    <tr><td>{{ balance.category_name }}</td><td>{{ balance.product_codes }}</td><td>{{ balance.size_display }}</td><td>{{ balance.total_sheets }}</td><td>{{ balance.total_volume_m2 }}</td></tr>
+                {% empty %}<tr><td colspan="5" class="text-muted">Остатков пока нет.</td></tr>{% endfor %}
+                </tbody>
+            </table></div>
+        </div></div>
+        <div class="card shadow-sm border-0"><div class="card-body">
+            <h2 class="h5">Последние отходы</h2>
+            <div class="table-responsive"><table class="table table-striped align-middle">
+                <thead><tr><th>Дата</th><th>Заказ</th><th>Лист</th><th>Отход (м²)</th><th>Сумма</th></tr></thead>
+                <tbody>
+                {% for waste in waste_records %}
+                    <tr><td>{{ waste.created_at|date:"d.m.Y H:i" }}</td><td>#{{ waste.order.id }}</td><td>{{ waste.warehouse_sheet.product_code }}</td><td>{{ waste.waste_volume_m2 }}</td><td>{{ waste.waste_amount }}</td></tr>
+                {% empty %}<tr><td colspan="5" class="text-muted">Отходов пока нет.</td></tr>{% endfor %}
+                </tbody>
+            </table></div>
+        </div></div>
+    </div>
+</div>
+{% endblock %}
