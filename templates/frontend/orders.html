@@ -71,7 +71,6 @@
 
   const width = form.querySelector('[name="width_mm"]');
   const height = form.querySelector('[name="height_mm"]');
-  const thickness = form.querySelector('[name="thickness_mm"]');
   const price = form.querySelector('[name="price_per_m2"]');
   const waste = form.querySelector('[name="waste_percent"]');
   const client = form.querySelector('[name="client"]');
@@ -99,17 +98,14 @@
     if (!warehouseSheet) return;
     const currentWidth = toNumber(width?.value);
     const currentHeight = toNumber(height?.value);
-    const currentThickness = toNumber(thickness?.value);
 
     Array.from(warehouseSheet.options).forEach((option) => {
       if (!option.value) return;
       const optionWidth = toNumber(option.dataset.widthMm);
       const optionHeight = toNumber(option.dataset.heightMm);
-      const optionThickness = toNumber(option.dataset.thicknessMm);
       const fits =
         (!currentWidth || optionWidth >= currentWidth) &&
-        (!currentHeight || optionHeight >= currentHeight) &&
-        (!currentThickness || optionThickness >= currentThickness);
+        (!currentHeight || optionHeight >= currentHeight);
 
       option.disabled = !fits;
       option.hidden = !fits;
@@ -130,7 +126,7 @@
     preview.textContent = `Объем: ${orderVolume.toFixed(3)} м² | Отход: ${wasteVolume.toFixed(3)} м² | Итого: ${total.toFixed(2)}`;
   };
 
-  [width, height, thickness].forEach((el) => {
+  [width, height].forEach((el) => {
     if (!el) return;
     el.addEventListener('input', () => {
       recalc();
