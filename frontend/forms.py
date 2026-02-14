@@ -159,7 +159,7 @@ class OrderForm(StyledModelForm):
     def _sheet_label(self, sheet):
         return (
             f"{sheet.glass_type.category.name} / {sheet.product_code} / {sheet.width_mm}×{sheet.height_mm} мм / "
-            f"{sheet.thickness_mm} мм / остаток {sheet.remaining_volume_m2} м²"
+            f"{sheet.thickness_mm} мм / остаток {sheet.remaining_volume_m2} см²"
         )
 
     def clean(self):

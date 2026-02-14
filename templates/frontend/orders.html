@@ -14,7 +14,7 @@
     <div class="col-12 col-xl-5">
         <div class="card shadow-sm border-0"><div class="card-body">
             <h2 class="h5">Новый заказ</h2>
-            <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за м².</p>
+            <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за см².</p>
             <form method="post" class="vstack gap-2" id="order-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="create_order">
@@ -49,7 +49,7 @@
                         <td>{{ order.width_mm }}×{{ order.height_mm }} / {{ order.thickness_mm }} мм</td>
                         <td>{{ order.get_status_display }}</td>
                         <td>{{ order.total_amount }}</td>
-                        <td>{{ order.warehouse_sheet.remaining_volume_m2 }} м²</td>
+                        <td>{{ order.warehouse_sheet.remaining_volume_m2 }} см²</td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="7" class="text-muted">Заказов пока нет.</td></tr>
@@ -124,10 +124,10 @@
     const h = toNumber(height?.value);
     const p = toNumber(price?.value);
     const wp = toNumber(waste?.value);
-    const orderVolume = (w / 1000) * (h / 1000);
+    const orderVolume = (w / 10) * (h / 10);
     const wasteVolume = orderVolume * (wp / 100);
     const total = (orderVolume + wasteVolume) * p;
-    preview.textContent = `Объем: ${orderVolume.toFixed(3)} м² | Отход: ${wasteVolume.toFixed(3)} м² | Итого: ${total.toFixed(2)}`;
+    preview.textContent = `Объем: ${orderVolume.toFixed(3)} см² | Отход: ${wasteVolume.toFixed(3)} см² | Итого: ${total.toFixed(2)}`;
   };
 
   [width, height, thickness].forEach((el) => {

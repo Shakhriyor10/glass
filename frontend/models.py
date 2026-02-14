@@ -86,7 +86,7 @@ class WarehouseReceipt(models.Model):
         validators=[MinValueValidator(Decimal("0.01"))],
     )
     quantity = models.PositiveIntegerField("Количество листов", default=1)
-    total_volume_m2 = models.DecimalField("Общий объем (м²)", max_digits=12, decimal_places=3, editable=False)
+    total_volume_m2 = models.DecimalField("Общий объем (см²)", max_digits=12, decimal_places=3, editable=False)
     total_amount = models.DecimalField(
         "Общая сумма",
         max_digits=12,
@@ -101,18 +101,18 @@ class WarehouseReceipt(models.Model):
         verbose_name_plural = "Приходы на склад"
 
     def __str__(self):
-        return f"{self.glass_type} - {self.quantity} шт. от {self.supplier.name} ({self.total_volume_m2} м²)"
+        return f"{self.glass_type} - {self.quantity} шт. от {self.supplier.name} ({self.total_volume_m2} см²)"
 
     @property
     def sheet_volume_m2(self):
-        return ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
+        return ((Decimal(self.width_mm) / Decimal("10")) * (Decimal(self.height_mm) / Decimal("10"))).quantize(
             Decimal("0.001")
         )
 
     def save(self, *args, **kwargs):
-        width_m = Decimal(self.width_mm) / Decimal("1000")
-        height_m = Decimal(self.height_mm) / Decimal("1000")
-        self.total_volume_m2 = (width_m * height_m * Decimal(self.quantity)).quantize(Decimal("0.001"))
+        width_cm = Decimal(self.width_mm) / Decimal("10")
+        height_cm = Decimal(self.height_mm) / Decimal("10")
+        self.total_volume_m2 = (width_cm * height_cm * Decimal(self.quantity)).quantize(Decimal("0.001"))
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new:
@@ -140,7 +140,7 @@ class WarehouseSheet(models.Model):
     width_mm = models.PositiveIntegerField("Ширина (мм)")
     height_mm = models.PositiveIntegerField("Высота (мм)")
     thickness_mm = models.DecimalField("Толщина (мм)", max_digits=6, decimal_places=2)
-    remaining_volume_m2 = models.DecimalField("Остаток объема (м²)", max_digits=12, decimal_places=3)
+    remaining_volume_m2 = models.DecimalField("Остаток объема (см²)", max_digits=12, decimal_places=3)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -150,7 +150,7 @@ class WarehouseSheet(models.Model):
 
     @property
     def full_volume_m2(self):
-        return ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
+        return ((Decimal(self.width_mm) / Decimal("10")) * (Decimal(self.height_mm) / Decimal("10"))).quantize(
             Decimal("0.001")
         )
 
@@ -186,7 +186,7 @@ class Order(models.Model):
     width_mm = models.PositiveIntegerField("Ширина заказа (мм)")
     height_mm = models.PositiveIntegerField("Высота заказа (мм)")
     thickness_mm = models.DecimalField("Толщина заказа (мм)", max_digits=6, decimal_places=2)
-    price_per_m2 = models.DecimalField("Цена за м²", max_digits=12, decimal_places=2)
+    price_per_m2 = models.DecimalField("Цена за см²", max_digits=12, decimal_places=2)
     waste_percent = models.DecimalField(
         "Процент отхода",
         max_digits=5,
@@ -194,10 +194,10 @@ class Order(models.Model):
         default=Decimal("0.00"),
         validators=[MinValueValidator(Decimal("0.00")), MaxValueValidator(Decimal("100.00"))],
     )
-    order_volume_m2 = models.DecimalField("Объем заказа (м²)", max_digits=12, decimal_places=3, editable=False)
-    waste_volume_m2 = models.DecimalField("Платный отход (м²)", max_digits=12, decimal_places=3, editable=False)
+    order_volume_m2 = models.DecimalField("Объем заказа (см²)", max_digits=12, decimal_places=3, editable=False)
+    waste_volume_m2 = models.DecimalField("Платный отход (см²)", max_digits=12, decimal_places=3, editable=False)
     total_amount = models.DecimalField("Итоговая сумма", max_digits=12, decimal_places=2, editable=False)
-    consumed_volume_m2 = models.DecimalField("Списанный объем (м²)", max_digits=12, decimal_places=3, default=Decimal("0.000"))
+    consumed_volume_m2 = models.DecimalField("Списанный объем (см²)", max_digits=12, decimal_places=3, default=Decimal("0.000"))
     is_consumed = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     note = models.TextField("Комментарий", blank=True)
@@ -218,7 +218,7 @@ class Order(models.Model):
             if self.thickness_mm > self.warehouse_sheet.thickness_mm:
                 raise ValidationError("Толщина заказа не должна превышать толщину листа.")
 
-            order_volume = ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
+            order_volume = ((Decimal(self.width_mm) / Decimal("10")) * (Decimal(self.height_mm) / Decimal("10"))).quantize(
                 Decimal("0.001")
             )
             leftover = max(self.warehouse_sheet.full_volume_m2 - order_volume, Decimal("0.000"))
@@ -228,7 +228,7 @@ class Order(models.Model):
                 raise ValidationError("Недостаточно остатка на выбранном листе для запуска заказа.")
 
     def save(self, *args, **kwargs):
-        order_volume = ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
+        order_volume = ((Decimal(self.width_mm) / Decimal("10")) * (Decimal(self.height_mm) / Decimal("10"))).quantize(
             Decimal("0.001")
         )
         leftover = max(self.warehouse_sheet.full_volume_m2 - order_volume, Decimal("0.000"))
@@ -261,7 +261,7 @@ class Order(models.Model):
 class WasteRecord(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="waste_record")
     warehouse_sheet = models.ForeignKey(WarehouseSheet, on_delete=models.CASCADE, related_name="waste_records")
-    waste_volume_m2 = models.DecimalField("Объем отхода (м²)", max_digits=12, decimal_places=3)
+    waste_volume_m2 = models.DecimalField("Объем отхода (см²)", max_digits=12, decimal_places=3)
     waste_amount = models.DecimalField("Сумма отхода", max_digits=12, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -279,14 +279,14 @@ class WarehouseBalance(models.Model):
         verbose_name="Вид стекла",
     )
     total_sheets = models.PositiveIntegerField("Общее количество листов", default=0)
-    total_volume_m2 = models.DecimalField("Общий объем (м²)", max_digits=12, decimal_places=3, default=Decimal("0.000"))
+    total_volume_m2 = models.DecimalField("Общий объем (см²)", max_digits=12, decimal_places=3, default=Decimal("0.000"))
 
     class Meta:
         verbose_name = "Остаток на складе"
         verbose_name_plural = "Остатки на складе"
 
     def __str__(self):
-        return f"{self.glass_type}: {self.total_sheets} шт., {self.total_volume_m2} м²"
+        return f"{self.glass_type}: {self.total_sheets} шт., {self.total_volume_m2} см²"
 
 
 def update_warehouse_balance(glass_type):
