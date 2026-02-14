@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django import forms
+from django.forms.models import ModelChoiceIteratorValue
 
 from .models import GlassCategory, GlassType, Order, Partner, WarehouseReceipt, WarehouseSheet
 
@@ -13,6 +14,30 @@ class StyledModelForm(forms.ModelForm):
             base_class = "form-select" if isinstance(widget, forms.Select) else "form-control"
             css = widget.attrs.get("class", "")
             widget.attrs["class"] = f"{css} {base_class}".strip()
+
+
+class WarehouseSheetSelect(forms.Select):
+    def __init__(self, *args, sheet_map=None, **kwargs):
+        self.sheet_map = sheet_map or {}
+        super().__init__(*args, **kwargs)
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        option_value = value
+        if isinstance(value, ModelChoiceIteratorValue):
+            option_value = value.value
+
+        sheet_data = self.sheet_map.get(str(option_value))
+        if sheet_data:
+            option["attrs"].update(
+                {
+                    "data-width-mm": sheet_data["width_mm"],
+                    "data-height-mm": sheet_data["height_mm"],
+                    "data-thickness-mm": sheet_data["thickness_mm"],
+                    "data-remaining-volume-m2": sheet_data["remaining_volume_m2"],
+                }
+            )
+        return option
 
 
 class PartnerForm(StyledModelForm):
@@ -91,9 +116,27 @@ class OrderForm(StyledModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["warehouse_sheet"].queryset = WarehouseSheet.objects.filter(remaining_volume_m2__gt=0).select_related(
+        warehouse_sheets = WarehouseSheet.objects.filter(remaining_volume_m2__gt=0).select_related(
             "glass_type", "glass_type__category"
         )
+        self.fields["warehouse_sheet"].queryset = warehouse_sheets
+        self.fields["client"].empty_label = "— Выберите клиента из базы —"
+        self.fields["warehouse_sheet"].empty_label = "— Выберите лист со склада —"
+
+        self.fields["warehouse_sheet"].widget = WarehouseSheetSelect(
+            attrs=self.fields["warehouse_sheet"].widget.attrs,
+            choices=self.fields["warehouse_sheet"].choices,
+            sheet_map={
+                str(sheet.pk): {
+                    "width_mm": sheet.width_mm,
+                    "height_mm": sheet.height_mm,
+                    "thickness_mm": sheet.thickness_mm,
+                    "remaining_volume_m2": sheet.remaining_volume_m2,
+                }
+                for sheet in warehouse_sheets
+            },
+        )
+        self.fields["warehouse_sheet"].widget.choices = self.fields["warehouse_sheet"].choices
         self.fields["warehouse_sheet"].label_from_instance = self._sheet_label
         self.suitable_sheets = []
 
