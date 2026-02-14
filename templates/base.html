@@ -9,48 +9,44 @@
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg app-navbar shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="{% url 'warehouse' %}">Glass Управление</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Переключить навигацию">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavbar">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'counterparty' %}active{% endif %}" href="{% url 'counterparty' %}">Контрагенты</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'orders' %}active{% endif %}" href="{% url 'orders' %}">Заказы</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {% if active_tab == 'warehouse' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Склад
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="{% url 'warehouse' %}">Склад и остатки стекла</a></li>
-                        <li><a class="dropdown-item {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="{% url 'warehouse_categories' %}">Категории стекла</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<div class="app-layout">
+    <aside class="app-sidebar shadow-sm">
+        <a class="app-brand" href="{% url 'warehouse' %}">Glass Управление</a>
+        <p class="sidebar-caption">Разделы</p>
+        <nav class="sidebar-nav nav flex-column gap-1">
+            <a class="sidebar-link {% if active_tab == 'counterparty' %}active{% endif %}" href="{% url 'counterparty' %}">Контрагенты</a>
+            <a class="sidebar-link {% if active_tab == 'orders' %}active{% endif %}" href="{% url 'orders' %}">Заказы</a>
+            <a class="sidebar-link {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="{% url 'warehouse' %}">Склад</a>
+            <a class="sidebar-sublink {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="{% url 'warehouse_categories' %}">Категории стекла</a>
+        </nav>
+    </aside>
 
-<main class="py-4">
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="app-main">
+        <nav class="navbar app-topbar shadow-sm">
+            <div class="container-fluid px-3 px-lg-4">
+                <span class="topbar-title">Навбар</span>
+                <div class="topbar-cash">
+                    Касса: <span class="cash-value">0</span>
                 </div>
-            {% endfor %}
-        {% endif %}
+            </div>
+        </nav>
 
-        {% block content %}{% endblock %}
+        <main class="app-content py-4">
+            <div class="container-fluid px-3 px-lg-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
-</main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
