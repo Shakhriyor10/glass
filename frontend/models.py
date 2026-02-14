@@ -213,10 +213,9 @@ class Order(models.Model):
             raise ValidationError({"client": "Выберите клиента."})
 
         if self.warehouse_sheet_id:
+            self.thickness_mm = self.warehouse_sheet.thickness_mm
             if self.width_mm > self.warehouse_sheet.width_mm or self.height_mm > self.warehouse_sheet.height_mm:
                 raise ValidationError("Размер заказа превышает размер выбранного листа.")
-            if self.thickness_mm > self.warehouse_sheet.thickness_mm:
-                raise ValidationError("Толщина заказа не должна превышать толщину листа.")
 
             order_volume = ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
                 Decimal("0.001")
@@ -228,6 +227,7 @@ class Order(models.Model):
                 raise ValidationError("Недостаточно остатка на выбранном листе для запуска заказа.")
 
     def save(self, *args, **kwargs):
+        self.thickness_mm = self.warehouse_sheet.thickness_mm
         order_volume = ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(
             Decimal("0.001")
         )

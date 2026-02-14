@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django import forms
 from django.forms.models import ModelChoiceIteratorValue
 
@@ -107,7 +105,6 @@ class OrderForm(StyledModelForm):
             "warehouse_sheet",
             "width_mm",
             "height_mm",
-            "thickness_mm",
             "price_per_m2",
             "waste_percent",
             "status",
@@ -141,16 +138,14 @@ class OrderForm(StyledModelForm):
         self.suitable_sheets = []
 
         data = self.data or None
-        if data and data.get("width_mm") and data.get("height_mm") and data.get("thickness_mm"):
+        if data and data.get("width_mm") and data.get("height_mm"):
             try:
                 width = int(data["width_mm"])
                 height = int(data["height_mm"])
-                thickness = Decimal(data["thickness_mm"])
                 self.suitable_sheets = list(
                     self.fields["warehouse_sheet"].queryset.filter(
                         width_mm__gte=width,
                         height_mm__gte=height,
-                        thickness_mm__gte=thickness,
                     )[:8]
                 )
             except (ValueError, ArithmeticError):
@@ -176,19 +171,19 @@ class OrderForm(StyledModelForm):
         sheet = cleaned_data.get("warehouse_sheet")
         width = cleaned_data.get("width_mm")
         height = cleaned_data.get("height_mm")
-        thickness = cleaned_data.get("thickness_mm")
-
         if sheet and width and width > sheet.width_mm:
             self.add_error("width_mm", "Ширина заказа больше ширины листа.")
         if sheet and height and height > sheet.height_mm:
             self.add_error("height_mm", "Высота заказа больше высоты листа.")
-        if sheet and thickness and thickness > sheet.thickness_mm:
-            self.add_error("thickness_mm", "Толщина заказа больше толщины листа.")
+
+        if sheet:
+            cleaned_data["thickness_mm"] = sheet.thickness_mm
 
         return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
+        instance.thickness_mm = self.cleaned_data["warehouse_sheet"].thickness_mm
         if not self.cleaned_data.get("client"):
             instance.client = Partner.objects.create(
                 partner_type=Partner.CLIENT,
