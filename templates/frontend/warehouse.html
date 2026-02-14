@@ -12,7 +12,7 @@
 
 <div class="row g-4 mb-4">
     <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Листов на складе</p><p class="display-6 mb-0">{{ total_sheets }}</p></div></div></div>
-    <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (м²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
+    <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (см²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
     <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Отходы (сумма)</p><p class="display-6 mb-0">{{ total_waste_amount }}</p></div></div></div>
 </div>
 <div class="row g-4">
@@ -44,7 +44,7 @@
         <div class="card shadow-sm border-0"><div class="card-body">
             <h2 class="h5">Последние отходы</h2>
             <div class="table-responsive"><table class="table table-striped align-middle">
-                <thead><tr><th>Дата</th><th>Заказ</th><th>Лист</th><th>Отход (м²)</th><th>Сумма</th></tr></thead>
+                <thead><tr><th>Дата</th><th>Заказ</th><th>Лист</th><th>Отход (см²)</th><th>Сумма</th></tr></thead>
                 <tbody>
                 {% for waste in waste_records %}
                     <tr><td>{{ waste.created_at|date:"d.m.Y H:i" }}</td><td>#{{ waste.order.id }}</td><td>{{ waste.warehouse_sheet.product_code }}</td><td>{{ waste.waste_volume_m2 }}</td><td>{{ waste.waste_amount }}</td></tr>
