@@ -58,7 +58,7 @@
     {% else %}
         <div class="row g-4 mb-4">
             <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Листов на складе</p><p class="display-6 mb-0">{{ total_sheets }}</p></div></div></div>
-            <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (м²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
+            <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (см²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
             <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Отходы (сумма)</p><p class="display-6 mb-0">{{ total_waste_amount }}</p></div></div></div>
         </div>
         <div class="row g-4">
@@ -90,7 +90,7 @@
                 <div class="card shadow-sm border-0"><div class="card-body">
                     <h2 class="h5">Последние отходы</h2>
                     <div class="table-responsive"><table class="table table-striped align-middle">
-                        <thead><tr><th>Дата</th><th>Заказ</th><th>Лист</th><th>Отход (м²)</th><th>Сумма</th></tr></thead>
+                        <thead><tr><th>Дата</th><th>Заказ</th><th>Лист</th><th>Отход (см²)</th><th>Сумма</th></tr></thead>
                         <tbody>
                         {% for waste in waste_records %}
                             <tr><td>{{ waste.created_at|date:"d.m.Y H:i" }}</td><td>#{{ waste.order.id }}</td><td>{{ waste.warehouse_sheet.product_code }}</td><td>{{ waste.waste_volume_m2 }}</td><td>{{ waste.waste_amount }}</td></tr>
@@ -106,7 +106,7 @@
         <div class="col-12 col-xl-5">
             <div class="card shadow-sm border-0"><div class="card-body">
                 <h2 class="h5">Новый заказ</h2>
-                <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за м².</p>
+                <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за см².</p>
                 <form method="post" class="vstack gap-2" id="order-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="create_order">
@@ -141,7 +141,7 @@
                             <td>{{ order.width_mm }}×{{ order.height_mm }} / {{ order.thickness_mm }} мм</td>
                             <td>{{ order.get_status_display }}</td>
                             <td>{{ order.total_amount }}</td>
-                            <td>{{ order.warehouse_sheet.remaining_volume_m2 }} м²</td>
+                            <td>{{ order.warehouse_sheet.remaining_volume_m2 }} см²</td>
                         </tr>
                     {% empty %}
                         <tr><td colspan="7" class="text-muted">Заказов пока нет.</td></tr>
@@ -190,10 +190,10 @@
     const h = parseFloat(height?.value || 0);
     const p = parseFloat(price?.value || 0);
     const wp = parseFloat(waste?.value || 0);
-    const orderVolume = (w / 1000) * (h / 1000);
+    const orderVolume = (w / 10) * (h / 10);
     const wasteVolume = orderVolume * (wp / 100);
     const total = (orderVolume + wasteVolume) * p;
-    preview.textContent = `Объем: ${orderVolume.toFixed(3)} м² | Отход: ${wasteVolume.toFixed(3)} м² | Итого: ${total.toFixed(2)}`;
+    preview.textContent = `Объем: ${orderVolume.toFixed(3)} см² | Отход: ${wasteVolume.toFixed(3)} см² | Итого: ${total.toFixed(2)}`;
   };
   [width, height, price, waste].forEach((el) => el && el.addEventListener('input', recalc));
 })();
