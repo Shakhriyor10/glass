@@ -208,13 +208,19 @@ class Order(models.Model):
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
 
+    @staticmethod
+    def sheet_fits_dimensions(sheet, width_mm, height_mm):
+        return (width_mm <= sheet.width_mm and height_mm <= sheet.height_mm) or (
+            width_mm <= sheet.height_mm and height_mm <= sheet.width_mm
+        )
+
     def clean(self):
         if self.client and self.client.partner_type != Partner.CLIENT:
             raise ValidationError({"client": "Выберите клиента."})
 
         if self.warehouse_sheet_id:
             self.thickness_mm = self.warehouse_sheet.thickness_mm
-            if self.width_mm > self.warehouse_sheet.width_mm or self.height_mm > self.warehouse_sheet.height_mm:
+            if not self.sheet_fits_dimensions(self.warehouse_sheet, self.width_mm, self.height_mm):
                 raise ValidationError("Размер заказа превышает размер выбранного листа.")
 
             order_volume = ((Decimal(self.width_mm) / Decimal("1000")) * (Decimal(self.height_mm) / Decimal("1000"))).quantize(

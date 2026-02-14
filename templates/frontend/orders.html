@@ -103,9 +103,13 @@
       if (!option.value) return;
       const optionWidth = toNumber(option.dataset.widthMm);
       const optionHeight = toNumber(option.dataset.heightMm);
-      const fits =
+      const directFit =
         (!currentWidth || optionWidth >= currentWidth) &&
         (!currentHeight || optionHeight >= currentHeight);
+      const rotatedFit =
+        (!currentWidth || optionHeight >= currentWidth) &&
+        (!currentHeight || optionWidth >= currentHeight);
+      const fits = directFit || rotatedFit;
 
       option.disabled = !fits;
       option.hidden = !fits;
