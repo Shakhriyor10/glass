@@ -106,7 +106,7 @@
         <div class="col-12 col-xl-5">
             <div class="card shadow-sm border-0"><div class="card-body">
                 <h2 class="h5">Новый заказ</h2>
-                <p class="text-muted">Выберите клиента или создайте нового, затем укажите размеры и цену за м².</p>
+                <p class="text-muted">Сначала выберите лист стекла, после этого введите размеры заказа и цену за м².</p>
                 <form method="post" class="vstack gap-2" id="order-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="create_order">
@@ -182,9 +182,36 @@
   if (!form) return;
   const width = form.querySelector('[name="width_mm"]');
   const height = form.querySelector('[name="height_mm"]');
+  const thickness = form.querySelector('[name="thickness_mm"]');
+  const sheet = form.querySelector('[name="warehouse_sheet"]');
   const price = form.querySelector('[name="price_per_m2"]');
   const waste = form.querySelector('[name="waste_percent"]');
   const preview = document.getElementById('order-preview');
+  const sizeFields = [width, height, thickness].filter(Boolean);
+
+  const syncLimitsBySheet = () => {
+    const selectedOption = sheet?.options?.[sheet.selectedIndex];
+    const hasSheet = Boolean(selectedOption && selectedOption.value);
+
+    sizeFields.forEach((field) => {
+      if (!field) return;
+      field.disabled = !hasSheet;
+      if (!hasSheet) {
+        field.removeAttribute('max');
+        return;
+      }
+      const attrName = field.name === 'width_mm' ? 'widthMm' : field.name === 'height_mm' ? 'heightMm' : 'thicknessMm';
+      const maxValue = selectedOption?.dataset?.[attrName];
+      if (maxValue) {
+        field.setAttribute('max', maxValue);
+        field.setAttribute('placeholder', `Макс: ${maxValue}`);
+        if (parseFloat(field.value || 0) > parseFloat(maxValue)) {
+          field.value = maxValue;
+        }
+      }
+    });
+  };
+
   const recalc = () => {
     const w = parseFloat(width?.value || 0);
     const h = parseFloat(height?.value || 0);
@@ -195,7 +222,12 @@
     const total = (orderVolume + wasteVolume) * p;
     preview.textContent = `Объем: ${orderVolume.toFixed(3)} м² | Отход: ${wasteVolume.toFixed(3)} м² | Итого: ${total.toFixed(2)}`;
   };
-  [width, height, price, waste].forEach((el) => el && el.addEventListener('input', recalc));
+  syncLimitsBySheet();
+  sheet && sheet.addEventListener('change', () => {
+    syncLimitsBySheet();
+    recalc();
+  });
+  [width, height, thickness, price, waste].forEach((el) => el && el.addEventListener('input', recalc));
 })();
 </script>
 {% endblock %}

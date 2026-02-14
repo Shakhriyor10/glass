@@ -116,6 +116,22 @@ class OrderForm(StyledModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.order_fields(
+            [
+                "warehouse_sheet",
+                "width_mm",
+                "height_mm",
+                "thickness_mm",
+                "price_per_m2",
+                "waste_percent",
+                "client",
+                "new_client_name",
+                "new_client_phone",
+                "new_client_address",
+                "status",
+                "note",
+            ]
+        )
         warehouse_sheets = WarehouseSheet.objects.filter(remaining_volume_m2__gt=0).select_related(
             "glass_type", "glass_type__category"
         )
@@ -138,6 +154,21 @@ class OrderForm(StyledModelForm):
         )
         self.fields["warehouse_sheet"].widget.choices = self.fields["warehouse_sheet"].choices
         self.fields["warehouse_sheet"].label_from_instance = self._sheet_label
+        self.fields["warehouse_sheet"].help_text = "Сначала выберите лист стекла, затем введите размеры заказа."
+
+        for field_name in ["width_mm", "height_mm", "thickness_mm"]:
+            self.fields[field_name].widget.attrs.setdefault("min", "0")
+
+        selected_sheet = None
+        if self.data and self.data.get("warehouse_sheet"):
+            selected_sheet = warehouse_sheets.filter(pk=self.data.get("warehouse_sheet")).first()
+        elif self.instance and self.instance.pk:
+            selected_sheet = self.instance.warehouse_sheet
+
+        if selected_sheet:
+            self.fields["width_mm"].widget.attrs["max"] = selected_sheet.width_mm
+            self.fields["height_mm"].widget.attrs["max"] = selected_sheet.height_mm
+            self.fields["thickness_mm"].widget.attrs["max"] = selected_sheet.thickness_mm
         self.suitable_sheets = []
 
         data = self.data or None
