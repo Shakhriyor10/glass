@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django import forms
 from django.forms.models import ModelChoiceIteratorValue
 
@@ -33,7 +31,6 @@ class WarehouseSheetSelect(forms.Select):
                 {
                     "data-width-mm": sheet_data["width_mm"],
                     "data-height-mm": sheet_data["height_mm"],
-                    "data-thickness-mm": sheet_data["thickness_mm"],
                     "data-remaining-volume-m2": sheet_data["remaining_volume_m2"],
                 }
             )
@@ -107,7 +104,6 @@ class OrderForm(StyledModelForm):
             "warehouse_sheet",
             "width_mm",
             "height_mm",
-            "thickness_mm",
             "price_per_m2",
             "waste_percent",
             "status",
@@ -130,7 +126,6 @@ class OrderForm(StyledModelForm):
                 str(sheet.pk): {
                     "width_mm": sheet.width_mm,
                     "height_mm": sheet.height_mm,
-                    "thickness_mm": sheet.thickness_mm,
                     "remaining_volume_m2": sheet.remaining_volume_m2,
                 }
                 for sheet in warehouse_sheets
@@ -141,16 +136,14 @@ class OrderForm(StyledModelForm):
         self.suitable_sheets = []
 
         data = self.data or None
-        if data and data.get("width_mm") and data.get("height_mm") and data.get("thickness_mm"):
+        if data and data.get("width_mm") and data.get("height_mm"):
             try:
                 width = int(data["width_mm"])
                 height = int(data["height_mm"])
-                thickness = Decimal(data["thickness_mm"])
                 self.suitable_sheets = list(
                     self.fields["warehouse_sheet"].queryset.filter(
                         width_mm__gte=width,
                         height_mm__gte=height,
-                        thickness_mm__gte=thickness,
                     )[:8]
                 )
             except (ValueError, ArithmeticError):
@@ -176,14 +169,11 @@ class OrderForm(StyledModelForm):
         sheet = cleaned_data.get("warehouse_sheet")
         width = cleaned_data.get("width_mm")
         height = cleaned_data.get("height_mm")
-        thickness = cleaned_data.get("thickness_mm")
 
         if sheet and width and width > sheet.width_mm:
             self.add_error("width_mm", "Ширина заказа больше ширины листа.")
         if sheet and height and height > sheet.height_mm:
             self.add_error("height_mm", "Высота заказа больше высоты листа.")
-        if sheet and thickness and thickness > sheet.thickness_mm:
-            self.add_error("thickness_mm", "Толщина заказа больше толщины листа.")
 
         return cleaned_data
 
@@ -196,6 +186,8 @@ class OrderForm(StyledModelForm):
                 phone=self.cleaned_data.get("new_client_phone", ""),
                 address=self.cleaned_data.get("new_client_address", ""),
             )
+        if instance.warehouse_sheet_id:
+            instance.thickness_mm = instance.warehouse_sheet.thickness_mm
         if commit:
             instance.save()
         return instance
