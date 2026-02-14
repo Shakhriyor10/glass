@@ -1,5 +1,6 @@
 from django import forms
 from django.forms.models import ModelChoiceIteratorValue
+from django.db.models import Q
 
 from .models import GlassCategory, GlassType, Order, Partner, WarehouseReceipt, WarehouseSheet
 
@@ -144,12 +145,18 @@ class OrderForm(StyledModelForm):
                 height = int(data["height_mm"])
                 self.suitable_sheets = list(
                     self.fields["warehouse_sheet"].queryset.filter(
-                        width_mm__gte=width,
-                        height_mm__gte=height,
+                        Q(width_mm__gte=width, height_mm__gte=height)
+                        | Q(width_mm__gte=height, height_mm__gte=width)
                     )[:8]
                 )
             except (ValueError, ArithmeticError):
                 self.suitable_sheets = []
+
+    @staticmethod
+    def _sheet_fits_dimensions(sheet, width, height):
+        return (width <= sheet.width_mm and height <= sheet.height_mm) or (
+            width <= sheet.height_mm and height <= sheet.width_mm
+        )
 
     def _sheet_label(self, sheet):
         return (
@@ -171,10 +178,8 @@ class OrderForm(StyledModelForm):
         sheet = cleaned_data.get("warehouse_sheet")
         width = cleaned_data.get("width_mm")
         height = cleaned_data.get("height_mm")
-        if sheet and width and width > sheet.width_mm:
-            self.add_error("width_mm", "Ширина заказа больше ширины листа.")
-        if sheet and height and height > sheet.height_mm:
-            self.add_error("height_mm", "Высота заказа больше высоты листа.")
+        if sheet and width and height and not self._sheet_fits_dimensions(sheet, width, height):
+            self.add_error("warehouse_sheet", "Размер заказа превышает размер выбранного листа.")
 
         if sheet:
             cleaned_data["thickness_mm"] = sheet.thickness_mm
