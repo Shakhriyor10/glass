@@ -189,6 +189,15 @@
   const preview = document.getElementById('order-preview');
   const sizeFields = [width, height, thickness].filter(Boolean);
 
+  const enforceMaxValue = (field) => {
+    if (!field || !field.hasAttribute('max') || !field.value) return;
+    const maxValue = parseFloat(field.getAttribute('max'));
+    const currentValue = parseFloat(field.value);
+    if (!Number.isNaN(maxValue) && !Number.isNaN(currentValue) && currentValue > maxValue) {
+      field.value = String(maxValue);
+    }
+  };
+
   const syncLimitsBySheet = () => {
     const selectedOption = sheet?.options?.[sheet.selectedIndex];
     const hasSheet = Boolean(selectedOption && selectedOption.value);
@@ -205,9 +214,7 @@
       if (maxValue) {
         field.setAttribute('max', maxValue);
         field.setAttribute('placeholder', `Макс: ${maxValue}`);
-        if (parseFloat(field.value || 0) > parseFloat(maxValue)) {
-          field.value = maxValue;
-        }
+        enforceMaxValue(field);
       }
     });
   };
@@ -227,7 +234,14 @@
     syncLimitsBySheet();
     recalc();
   });
-  [width, height, thickness, price, waste].forEach((el) => el && el.addEventListener('input', recalc));
+  sizeFields.forEach((field) => {
+    field.addEventListener('input', () => {
+      enforceMaxValue(field);
+      recalc();
+    });
+    field.addEventListener('change', () => enforceMaxValue(field));
+  });
+  [price, waste].forEach((el) => el && el.addEventListener('input', recalc));
 })();
 </script>
 {% endblock %}
