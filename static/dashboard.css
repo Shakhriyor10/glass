@@ -40,12 +40,38 @@ body {
 .sidebar-link,
 .sidebar-sublink {
     display: block;
+    width: 100%;
     text-decoration: none;
     border-radius: 12px;
     padding: 0.65rem 0.85rem;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 600;
     transition: all 0.2s ease;
+}
+
+.sidebar-toggle {
+    border: 0;
+    background: transparent;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.sidebar-toggle-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-toggle[aria-expanded="true"] .sidebar-toggle-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
 }
 
 .sidebar-sublink {

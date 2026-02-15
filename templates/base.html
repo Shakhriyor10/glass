@@ -16,8 +16,21 @@
         <nav class="sidebar-nav nav flex-column gap-1">
             <a class="sidebar-link {% if active_tab == 'counterparty' %}active{% endif %}" href="{% url 'counterparty' %}">Контрагенты</a>
             <a class="sidebar-link {% if active_tab == 'orders' %}active{% endif %}" href="{% url 'orders' %}">Заказы</a>
-            <a class="sidebar-link {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="{% url 'warehouse' %}">Склад</a>
-            <a class="sidebar-sublink {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="{% url 'warehouse_categories' %}">Категории стекла</a>
+            <button
+                class="sidebar-link sidebar-toggle {% if active_tab == 'warehouse' %}active{% endif %}"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#warehouse-menu"
+                aria-expanded="{% if active_tab == 'warehouse' %}true{% else %}false{% endif %}"
+                aria-controls="warehouse-menu"
+            >
+                <span>Склад</span>
+                <span class="sidebar-toggle-icon">▾</span>
+            </button>
+            <div class="collapse sidebar-submenu {% if active_tab == 'warehouse' %}show{% endif %}" id="warehouse-menu">
+                <a class="sidebar-sublink {% if active_tab == 'warehouse' and warehouse_view != 'categories' %}active{% endif %}" href="{% url 'warehouse' %}">Обзор склада</a>
+                <a class="sidebar-sublink {% if active_tab == 'warehouse' and warehouse_view == 'categories' %}active{% endif %}" href="{% url 'warehouse_categories' %}">Категории стекла</a>
+            </div>
         </nav>
     </aside>
 
