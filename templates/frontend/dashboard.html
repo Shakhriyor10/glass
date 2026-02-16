@@ -57,7 +57,7 @@
         </div>
     {% else %}
         <div class="row g-4 mb-4">
-            <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Листов на складе</p><p class="display-6 mb-0">{{ total_sheets }}</p></div></div></div>
+            <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Продукции на складе (кг)</p><p class="display-6 mb-0">{{ total_sheets }}</p></div></div></div>
             <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Остаток объема (см²)</p><p class="display-6 mb-0">{{ total_volume }}</p></div></div></div>
             <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><p class="text-muted mb-1">Отходы (сумма)</p><p class="display-6 mb-0">{{ total_waste_amount }}</p></div></div></div>
         </div>
@@ -79,7 +79,7 @@
                 <div class="card shadow-sm border-0"><div class="card-body">
                     <h2 class="h5">Остатки на складе</h2>
                     <div class="table-responsive"><table class="table table-hover align-middle">
-                        <thead><tr><th>Категория</th><th>Коды</th><th>Размеры</th><th>Листов</th><th>Объем</th></tr></thead>
+                        <thead><tr><th>Категория</th><th>Коды</th><th>Размеры</th><th>Количество (кг)</th><th>Объем</th></tr></thead>
                         <tbody>
                         {% for balance in warehouse_balance_rows %}
                             <tr><td>{{ balance.category_name }}</td><td>{{ balance.product_codes }}</td><td>{{ balance.size_display }}</td><td>{{ balance.total_sheets }}</td><td>{{ balance.total_volume_m2 }}</td></tr>
