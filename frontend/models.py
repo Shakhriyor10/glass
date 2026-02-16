@@ -85,7 +85,7 @@ class WarehouseReceipt(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.01"))],
     )
-    quantity = models.PositiveIntegerField("Количество листов", default=1)
+    quantity = models.PositiveIntegerField("Количество (кг)", default=1)
     total_volume_m2 = models.DecimalField("Общий объем (м²)", max_digits=12, decimal_places=3, editable=False)
     total_amount = models.DecimalField(
         "Общая сумма",
@@ -101,7 +101,7 @@ class WarehouseReceipt(models.Model):
         verbose_name_plural = "Приходы на склад"
 
     def __str__(self):
-        return f"{self.glass_type} - {self.quantity} шт. от {self.supplier.name} ({self.total_volume_m2} м²)"
+        return f"{self.glass_type} - {self.quantity} кг от {self.supplier.name} ({self.total_volume_m2} м²)"
 
     @property
     def sheet_volume_m2(self):
@@ -284,7 +284,7 @@ class WarehouseBalance(models.Model):
         related_name="warehouse_balance",
         verbose_name="Вид стекла",
     )
-    total_sheets = models.PositiveIntegerField("Общее количество листов", default=0)
+    total_sheets = models.PositiveIntegerField("Общее количество (кг)", default=0)
     total_volume_m2 = models.DecimalField("Общий объем (м²)", max_digits=12, decimal_places=3, default=Decimal("0.000"))
 
     class Meta:
@@ -292,7 +292,7 @@ class WarehouseBalance(models.Model):
         verbose_name_plural = "Остатки на складе"
 
     def __str__(self):
-        return f"{self.glass_type}: {self.total_sheets} шт., {self.total_volume_m2} м²"
+        return f"{self.glass_type}: {self.total_sheets} кг, {self.total_volume_m2} м²"
 
 
 def update_warehouse_balance(glass_type):
